@@ -67,7 +67,7 @@
         <p>在网上看到一篇讲述充分利用CPU的多核优势，来让SHELL中的命令执行速度加快。<br>网上的那篇文章：<a href="http://www.rankfocus.com/use-cpu-cores-linux-commands/" target="_blank">http://www.rankfocus.com/use-cpu-cores-linux-commands/</a><br>今天，对所有技巧做一次验证。<br>力学笃行!</p>
 <p>测试环境:<br>OS: Ubuntu 12.04<br>CPU: 8 cores<br>Memory: 94 GB</p>
 <p>开始前，请安装<code>http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2</code></p>
-<h2>Bzip2加速</h2>
+<h2>Bzip2</h2>
 <p>未并行:</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre>1
 2
@@ -81,7 +81,7 @@
 <span class="title">sys</span>	0<span class="title">m2</span>.344<span class="title">s</span>
 </pre></td></tr></table></figure>
 
-<p>启用加速:</p>
+<p>启用并行:</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre>1
 2
 3
