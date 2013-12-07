@@ -68,164 +68,30 @@
 <p>测试环境:<br>OS: Ubuntu 12.04<br>CPU: 8 cores<br>Memory: 94 GB</p>
 <p>开始前，请安装<code>http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2</code></p>
 <h2>Bzip2</h2>
-<p>未并行:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(cat zabbix_agentd.log.old | bzip2 --best &gt; compressedfile.bz2)</span>
-
-<span class="title">real</span>	5<span class="title">m12</span>.338<span class="title">s</span>
-<span class="title">user</span>	5<span class="title">m10</span>.975<span class="title">s</span>
-<span class="title">sys</span>	0<span class="title">m2</span>.344<span class="title">s</span>
-</pre></td></tr></table></figure>
-
-<p>启用并行:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-</pre></td><td class="code"><pre><span class="comment">time(cat</span> <span class="comment">zabbix_agentd</span>.<span class="comment">log</span>.<span class="comment">old</span> <span class="comment">|</span> <span class="comment">parallel</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">pipe</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">recend</span> <span class="comment">''</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">k</span> <span class="comment">bzip2</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">best</span> &gt; <span class="comment">compressedfile_p</span>.<span class="comment">bz2)</span>
-
-<span class="comment">real	0m46</span>.<span class="comment">569s</span>
-<span class="comment">user	5m4</span>.<span class="comment">683s</span>    <span class="comment">#用户态所用时间差不多，但是real执行时间大大降低</span>
-<span class="comment">sys	0m14</span>.<span class="comment">885s
-</pre></td></tr></table></figure>
-
+<p>未并行:<br>time(cat zabbix_agentd.log.old | bzip2 —best &gt; compressedfile.bz2)</p>
+<p>real    5m12.338s<br>user    5m10.975s<br>sys    0m2.344s</p>
+<p>启用并行:<br>time(cat zabbix_agentd.log.old | parallel —pipe —recend ‘’ —k bzip2 —best &gt; compressedfile_p.bz2)</p>
+<p>real    0m46.569s<br>user    5m4.683s    #用户态所用时间差不多，但是real执行时间大大降低<br>sys    0m14.885s</p>
 <h2>GREP</h2>
-<p>未并行:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-7
-8
-</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(grep error zabbix_agentd.log.old)</span>
-5 <span class="title">packets</span> <span class="title">transmitted</span>, 0 <span class="title">received</span>, +3 <span class="title">errors</span>, 100% <span class="title">packet</span> <span class="title">loss</span>, <span class="title">time</span> 4015<span class="title">ms</span>
-5 <span class="title">packets</span> <span class="title">transmitted</span>, 2 <span class="title">received</span>, +3 <span class="title">errors</span>, 60% <span class="title">packet</span> <span class="title">loss</span>, <span class="title">time</span> 4007<span class="title">ms</span>
-5 <span class="title">packets</span> <span class="title">transmitted</span>, 0 <span class="title">received</span>, +3 <span class="title">errors</span>, 100% <span class="title">packet</span> <span class="title">loss</span>, <span class="title">time</span> 4016<span class="title">ms</span>
-
-<span class="title">real</span>	0<span class="title">m1</span>.971<span class="title">s</span>
-<span class="title">user</span>	0<span class="title">m1</span>.684<span class="title">s</span>
-<span class="title">sys</span>	0<span class="title">m0</span>.280<span class="title">s</span>
-</pre></td></tr></table></figure>
-
-<p>启用并行: </p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-7
-8
-</pre></td><td class="code"><pre><span class="keyword">time</span>(cat zabbix_agentd.<span class="keyword">log</span>.old | parallel --<span class="keyword">pipe</span> <span class="keyword">grep</span> <span class="string">'error'</span>)
-<span class="number">5</span> packets transmitted, <span class="number">0</span> received, +<span class="number">3</span> errors, <span class="number">100</span>% packet loss, <span class="keyword">time</span> <span class="number">4015</span>ms
-<span class="number">5</span> packets transmitted, <span class="number">2</span> received, +<span class="number">3</span> errors, <span class="number">60</span>% packet loss, <span class="keyword">time</span> <span class="number">4007</span>ms
-<span class="number">5</span> packets transmitted, <span class="number">0</span> received, +<span class="number">3</span> errors, <span class="number">100</span>% packet loss, <span class="keyword">time</span> <span class="number">4016</span>ms
-
-real	0m1<span class="number">0</span>.<span class="number">508</span><span class="keyword">s</span>  <span class="comment">#为什么会慢呢？cat 并没有并行，而grep速度本身就很快。不适合使用并行。</span>
-user	0m7.<span class="number">596</span><span class="keyword">s</span>   <span class="comment">#如果更换成复杂的业务可能会快一些。有计划再实验。</span>
-sys	0m15.<span class="number">057</span><span class="keyword">s</span>
-</pre></td></tr></table></figure>
-
+<p>未并行:<br>time(grep error zabbix_agentd.log.old)<br>5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4015ms<br>5 packets transmitted, 2 received, +3 errors, 60% packet loss, time 4007ms<br>5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4016ms</p>
+<p>real    0m1.971s<br>user    0m1.684s<br>sys    0m0.280s</p>
+<p>启用并行:<br>time(cat zabbix_agentd.log.old | parallel —pipe grep ‘error’)<br>5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4015ms<br>5 packets transmitted, 2 received, +3 errors, 60% packet loss, time 4007ms<br>5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4016ms</p>
+<p>real    0m10.508s  #为什么会慢呢？cat 并没有并行，而grep速度本身就很快。不适合使用并行。<br>user    0m7.596s   #如果更换成复杂的业务可能会快一些。有计划再实验。<br>sys    0m15.057s</p>
 <h2>AWK</h2>
-<p>未并行:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(cat rands25<span class="variable">M</span>.log | awk '<span class="tuple">{s+=$<span class="number">1</span>}</span><span class="variable">END</span><span class="tuple">{print s}</span>')</span>
-73487658033
-
-<span class="title">real</span>	0<span class="title">m1</span>.939<span class="title">s</span>
-<span class="title">user</span>	0<span class="title">m1</span>.908<span class="title">s</span>
-<span class="title">sys</span>	0<span class="title">m0</span>.068<span class="title">s</span>
-</pre></td></tr></table></figure>
-
-<p>启用并行:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(cat rands25<span class="variable">M</span>.log | parallel --pipe awk \'<span class="tuple">{s+=\$<span class="number">1</span>}</span><span class="variable">END</span><span class="tuple">{print s}</span>\' | awk '<span class="tuple">{s+=$<span class="number">1</span>}</span><span class="variable">END</span><span class="tuple">{print s}</span>')</span>
-73487658033
-
-<span class="title">real</span>	0<span class="title">m0</span>.780<span class="title">s</span>
-<span class="title">user</span>	0<span class="title">m2</span>.760<span class="title">s</span>
-<span class="title">sys</span>	0<span class="title">m0</span>.376<span class="title">s</span>
-</pre></td></tr></table></figure>
-
-<p>效果还是比较明显：）</p>
+<p>未并行:<br>time(cat rands25M.log | awk ‘{s+=$1}END{print s}’)<br>73487658033</p>
+<p>real    0m1.939s<br>user    0m1.908s<br>sys    0m0.068s</p>
+<p>启用并行:<br>time(cat rands25M.log | parallel —pipe awk \&#39;{s+=\$1}END{print s}\‘ | awk ’{s+=$1}END{print s}&#39;)<br>73487658033</p>
+<p>real    0m0.780s<br>user    0m2.760s<br>sys    0m0.376s<br>效果还是比较明显：）</p>
 <h2>WC</h2>
-<p>最后的‘Water Closet’测试<br>未并行:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(wc -l zabbix_agentd.log.old)</span>
-21110223 <span class="title">zabbix_agentd</span>.<span class="title">log</span>.<span class="title">old</span>
-
-<span class="title">real</span>	0<span class="title">m0</span>.884<span class="title">s</span>
-<span class="title">user</span>	0<span class="title">m0</span>.544<span class="title">s</span>
-<span class="title">sys</span>	0<span class="title">m0</span>.336<span class="title">s</span>
-</pre></td></tr></table></figure>
-
-<p>启用并行:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-</pre></td><td class="code"><pre><span class="comment">time(cat</span> <span class="comment">zabbix_agentd</span>.<span class="comment">log</span>.<span class="comment">old</span> <span class="comment">|</span> <span class="comment">parallel</span> <span class="literal">-</span><span class="literal">-</span><span class="comment">pipe</span> <span class="comment">wc</span> <span class="literal">-</span><span class="comment">l</span> <span class="comment">|</span> <span class="comment">awk</span> <span class="comment">'{s</span>+<span class="comment">=$1}END{print</span> <span class="comment">s}')</span>
-<span class="comment">21110223</span>
-
-<span class="comment">real	0m10</span>.<span class="comment">484s</span>   <span class="comment">#时间又较长？上个示例中，awk做了相对较为复杂的计算。而本案例，只是统计行数。</span>
-<span class="comment">user	0m4</span>.<span class="comment">820s</span>    <span class="comment">#So</span>.<span class="string">.</span><span class="string">.</span> <span class="string">.</span><span class="string">.</span><span class="string">.</span><span class="comment">什么情况下，使用并行。什么情况下，乖乖使用传统做法。</span>
-<span class="comment">sys	0m13</span>.<span class="comment">525s
-</pre></td></tr></table></figure>
-
+<p>最后的‘Water Closet’测试<br>未并行:<br>time(wc -l zabbix_agentd.log.old)<br>21110223 zabbix_agentd.log.old</p>
+<p>real    0m0.884s<br>user    0m0.544s<br>sys    0m0.336s</p>
+<p>启用并行:<br>time(cat zabbix_agentd.log.old | parallel —pipe wc -l | awk ‘{s+=$1}END{print s}’)<br>21110223</p>
+<p>real    0m10.484s   #时间又较长？上个示例中，awk做了相对较为复杂的计算。而本案例，只是统计行数。<br>user    0m4.820s    #So… …什么情况下，使用并行。什么情况下，乖乖使用传统做法。<br>sys    0m13.525s</p>
 <h2>小结</h2>
-<p>附带另一个实验，作为小结:</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(cat rands25<span class="variable">M</span>.log | awk '<span class="tuple">{s+=$<span class="number">1</span>}</span><span class="variable">END</span><span class="tuple">{print s}</span>')</span>
-73487658033
-
-<span class="title">real</span>	0<span class="title">m1</span>.948<span class="title">s</span>
-<span class="title">user</span>	0<span class="title">m1</span>.920<span class="title">s</span>
-<span class="title">sys</span>	0<span class="title">m0</span>.068<span class="title">s</span>
-</pre></td></tr></table></figure>
-
-<figure class="highlight"><table><tr><td class="gutter"><pre>1
-2
-3
-4
-5
-6
-</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(cat rands25<span class="variable">M</span>.log | xargs -<span class="variable">P</span> <span class="number">8</span> | awk '<span class="tuple">{s+=$<span class="number">1</span>}</span><span class="variable">END</span><span class="tuple">{print s}</span>')</span>
-3317178
-
-<span class="title">real</span>	0<span class="title">m1</span>.139<span class="title">s</span>
-<span class="title">user</span>	0<span class="title">m1</span>.084<span class="title">s</span>
-<span class="title">sys</span>	0<span class="title">m0</span>.940<span class="title">s</span>
-</pre></td></tr></table></figure>
-
+<p>附带另一个实验，作为小结:<br>time(cat rands25M.log | awk ‘{s+=$1}END{print s}’)<br>73487658033</p>
+<p>real    0m1.948s<br>user    0m1.920s<br>sys    0m0.068s</p>
+<p>time(cat rands25M.log | xargs -P 8 | awk ‘{s+=$1}END{print s}’)<br>3317178</p>
+<p>real    0m1.139s<br>user    0m1.084s<br>sys    0m0.940s</p>
 <p>xargs 也可以并行，但是为什么效果没有parallel牛逼呢？</p>
 
       
