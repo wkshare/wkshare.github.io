@@ -63,8 +63,19 @@
 <p>测试环境:<br>OS: Ubuntu 12.04<br>CPU: 8 cores<br>Memory: 94 GB</p>
 <p>开始前，请安装<code>apt-get install moreutils</code></p>
 <h2>Bzip2加速</h2>
-<p>未加速:<br>`<br>time(cat zabbix_agentd.log.old | bzip2 —best &gt; compressedfile.bz2)</p>
-<p>real    5m12.338s<br>user    5m10.975s<br>sys    0m2.344s<br>`</p>
+<p>未加速:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+</pre></td><td class="code"><pre><span class="function"><span class="title">time</span><span class="params">(cat zabbix_agentd.log.old | bzip2 --best &gt; compressedfile.bz2)</span>
+
+<span class="title">real</span>	5<span class="title">m12</span>.338<span class="title">s</span>
+<span class="title">user</span>	5<span class="title">m10</span>.975<span class="title">s</span>
+<span class="title">sys</span>	0<span class="title">m2</span>.344<span class="title">s</span>
+</pre></td></tr></table></figure>
+
 <p>启用加速:</p>
 <h1>#</h1>
 
