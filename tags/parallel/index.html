@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>test2 | IceFire Blog</title>
+  <title>parallel | IceFire Blog</title>
   <meta name="author" content="Alex Wong">
   
   <meta name="description" content="Music Camera Movie">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="test2"/>
+  
   <meta property="og:site_name" content="IceFire Blog"/>
 
   
@@ -43,23 +43,35 @@
 </nav>
 <div class="clearfix"></div></header>
   <div id="content" class="inner">
-    <div id="main-col" class="alignleft"><div id="wrapper"><article class="post">
+    <div id="main-col" class="alignleft"><div id="wrapper">
+<h2 class="archive-title tag">parallel</h2>
+
+
+  
+    <article class="post">
   
   <div class="post-content">
     <header>
       
         <div class="icon"></div>
-        <time datetime="2013-12-07T10:56:06.000Z"><a href="/2013/12/07/test2/">Dec 7 2013</a></time>
+        <time datetime="2013-12-07T12:29:47.000Z"><a href="/2013/12/07/parallel-shell-command/">Dec 7 2013</a></time>
       
       
   
-    <h1 class="title">test2</h1>
+    <h1 class="title"><a href="/2013/12/07/parallel-shell-command/">parallel shell command</a></h1>
   
 
     </header>
     <div class="entry">
       
-        <p>test2 heha</p>
+        <p>在网上看到一篇讲述充分利用CPU的多核优势，来让SHELL中的命令执行速度加快。<br>今天，对所有技巧做一次验证。<br>力学笃行!</p>
+<p>测试环境:<br>OS: Ubuntu 12.04<br>CPU: 8 cores<br>Memory: 94 GB</p>
+<p>开始前，请安装<code>apt-get install moreutils</code></p>
+<h2>Bzip2加速</h2>
+<p>未加速:<br>`<br>time(cat zabbix_agentd.log.old | bzip2 —best &gt; compressedfile.bz2)</p>
+<p>real    5m12.338s<br>user    5m10.975s<br>sys    0m2.344s<br>`</p>
+<p>启用加速:</p>
+<h1>#</h1>
 
       
     </div>
@@ -67,24 +79,6 @@
       
         
         
-        
-  <div class="addthis addthis_toolbox addthis_default_style">
-    
-      <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
-    
-    
-      <a class="addthis_button_tweet"></a>
-    
-    
-      <a class="addthis_button_google_plusone" g:plusone:size="medium"></a>
-    
-    
-      <a class="addthis_button_pinterest_pinit" pi:pinit:layout="horizontal"></a>
-    
-    <a class="addthis_counter addthis_pill_style"></a>
-  </div>
-  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js"></script>
-
       
       <div class="clearfix"></div>
     </footer>
@@ -92,25 +86,13 @@
 </article>
 
 
-<section id="comment">
-  <h1 class="title">Comments</h1>
-
   
-      <div id="fb-root"></div>
-<script>
-  (function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=123456789012345";
-    fjs.parentNode.insertBefore(js, fjs);
-  }(document, 'script', 'facebook-jssdk'));
-</script>
 
-<div class="fb-comments" data-href="http://yoursite.com/2013/12/07/test2/" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
-      
+  <nav id="pagination">
   
-</section>
+  
+  <div class="clearfix"></div>
+</nav>
 </div></div>
     <aside id="sidebar" class="alignright">
   <div class="search">

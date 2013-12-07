@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>test2 | IceFire Blog</title>
+  <title>parallel shell command | IceFire Blog</title>
   <meta name="author" content="Alex Wong">
   
   <meta name="description" content="Music Camera Movie">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="test2"/>
+  <meta property="og:title" content="parallel shell command"/>
   <meta property="og:site_name" content="IceFire Blog"/>
 
   
@@ -49,17 +49,24 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2013-12-07T10:56:06.000Z"><a href="/2013/12/07/test2/">Dec 7 2013</a></time>
+        <time datetime="2013-12-07T12:29:47.000Z"><a href="/2013/12/07/parallel-shell-command/">Dec 7 2013</a></time>
       
       
   
-    <h1 class="title">test2</h1>
+    <h1 class="title">parallel shell command</h1>
   
 
     </header>
     <div class="entry">
       
-        <p>test2 heha</p>
+        <p>在网上看到一篇讲述充分利用CPU的多核优势，来让SHELL中的命令执行速度加快。<br>今天，对所有技巧做一次验证。<br>力学笃行!</p>
+<p>测试环境:<br>OS: Ubuntu 12.04<br>CPU: 8 cores<br>Memory: 94 GB</p>
+<p>开始前，请安装<code>apt-get install moreutils</code></p>
+<h2>Bzip2加速</h2>
+<p>未加速:<br>`<br>time(cat zabbix_agentd.log.old | bzip2 —best &gt; compressedfile.bz2)</p>
+<p>real    5m12.338s<br>user    5m10.975s<br>sys    0m2.344s<br>`</p>
+<p>启用加速:</p>
+<h1>#</h1>
 
       
     </div>
@@ -67,6 +74,11 @@
       
         
         
+  
+  <div class="tags">
+    <a href="/tags/shell/">shell</a>, <a href="/tags/parallel/">parallel</a>
+  </div>
+
         
   <div class="addthis addthis_toolbox addthis_default_style">
     
@@ -107,7 +119,7 @@
   }(document, 'script', 'facebook-jssdk'));
 </script>
 
-<div class="fb-comments" data-href="http://yoursite.com/2013/12/07/test2/" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+<div class="fb-comments" data-href="http://yoursite.com/2013/12/07/parallel-shell-command/" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
       
   
 </section>
