@@ -54,6 +54,429 @@
     <header>
       
         <div class="icon"></div>
+        <time datetime="2013-12-08T08:07:53.000Z"><a href="/2013/12/08/auto-installation-by-cobbler/">Dec 8 2013</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2013/12/08/auto-installation-by-cobbler/">Auto Installation by Cobbler</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <p>如何上线1000+台服务器：<br><em>方案1：</em><br>让机房代维人员，一台一台安装。优点：不用自己管。（幸苦代维兄弟了）<br><em>方案2：</em><br>使用dhcp、tftp、kickstart，建立自动化部署环境。优点：快速，安装环境完全自己定制。<br><em>方案3：</em><br>使用Cobbler。方便、快速、可定制化。</p>
+<p>方案2，是最常用的。有些公司会自己定制封装这套环境，比如我们：）</p>
+<p>这篇文章，将介绍，如何利用Cobbler来建立自动化安装环境。<br>近期即将上线新机器，索性研究下自动化安装技术。</p>
+<p>君子欲讷于言而敏于行。实践步骤如下：</p>
+<h3>环境</h3>
+<p>OS: Ubuntu 12.04<br>LAN: 10.10.0.1<br>参考文档：<a href="https://help.ubuntu.com/community/Cobbler" target="_blank">https://help.ubuntu.com/community/Cobbler</a></p>
+<h3>部署Cobbler</h3>
+<p>原本计划apt-get搞定。<br>不过Cobbler的新版本，并没有提供Ubuntu上的deb包安装。<br>所以准备从源码开始安装Cobbler。<br>但是，捣鼓了一个下午，发现源码安装Cobbler在Ubuntu上面有众多的问题，有些繁琐，还不如我自己搭建kickstart环境。<br>(手动编译安装运行，有利于了解其工作原理)<br>于是呼，发现了Ubuntu版本中，有个：ubuntu-orchestra-server</p>
+<p><em>ubuntu-orchestra-server 简介</em><br>对Cobbler做了一些预设，并启动了Squid代理缓存。<br>好东西呀！</p>
+<p><em>安装过程</em></p>
+<pre>
+apt-get install ubuntu-orchestra-server
+apt-get install cobbler-web   #该工具，可以方便维护cobbler
+apt-get install debmirror     #包缓存，也可以自己用其他方式建立deb源
+
+$ cobbler check   #检查配置
+No configuration problems found.  All systems go.
+
+$ cobbler sync    #更新配置
+
+$ htdigest /etc/cobbler/users.digest "Cobbler" cobbler  #配置web登录密码
+# web管理界面，暂时不使用。
+
+$ mount /dev/sr0 /mnt    #挂载cdrom到/mnt。cdrom中放有安装光盘
+$ cobbler import --path=/mnt --name=ubuntu12.04    #导入percise版本的安装源
+
+$ cobbler profile list   #查看对应的配置
+其中非常重要的项目，seed类似ks文件，格式，看起来比ks文件还要反人类。
+Kickstart : /var/lib/cobbler/kickstarts/sample.seed
+
+$ cobbler profile --name=ubuntu12.04-x86_64 --Kickstart=/etc/cobbler/ubuntu-server.seed   #修改seed文件
+
+$ cobbler sync   #最后一步，同步配置
+</pre>
+
+<p><em>其他重要配置</em></p>
+<pre>
+root@ubuntusource:~# ls /etc/cobbler/*.template
+/etc/cobbler/dhcp.template     /etc/cobbler/named.template  /etc/cobbler/tftpd.template
+/etc/cobbler/dnsmasq.template  /etc/cobbler/rsync.template  /etc/cobbler/zone.template
+
+#上面，有各个所需服务的配置模板。cobbler sync执行后，会对相应服务进行配置。
+
+root@ubuntusource:~# netstat -ntlp
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      6455/apache2    
+tcp        0      0 0.0.0.0:10514           0.0.0.0:*               LISTEN      5821/rsyslogd   
+tcp        0      0 0.0.0.0:53              0.0.0.0:*               LISTEN      9022/dnsmasq    
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1512/sshd       
+tcp        0      0 127.0.0.1:25151         0.0.0.0:*               LISTEN      6632/python     
+tcp6       0      0 :::10514                :::*                    LISTEN      5821/rsyslogd   
+tcp6       0      0 :::53                   :::*                    LISTEN      9022/dnsmasq    
+tcp6       0      0 :::22                   :::*                    LISTEN      1512/sshd       
+tcp6       0      0 :::3128                 :::*                    LISTEN      6780/squid3
+
+#监听了很多端口，其中25151就是cobbler了。只监听了127，已经被apache代理。
+#squid3，是用于安装源的代理。可以在seed文件进行配置。
+</pre>
+
+<h3>一份seed参考配置</h3>
+<figure class="highlight"><table><tr><td class="gutter"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+</pre></td><td class="code"><pre><span class="preprocessor"># Locale</span>
+d-i debconf/language <span class="keyword">string</span> en
+d-i debian-installer/locale <span class="keyword">string</span> en_US
+d-i debian-installer/language <span class="keyword">string</span> en
+d-i debian-installer/country <span class="keyword">string</span> US
+d-i localechooser/supported-locales en_US.UTF-<span class="number">8</span>, zh_CN.UTF-<span class="number">8</span>
+
+<span class="preprocessor"># Keyboard</span>
+d-i console-setup/ask_detect boolean <span class="literal">false</span>
+d-i keyboard-configuration/modelcode <span class="keyword">string</span> pc105
+d-i keyboard-configuration/layoutcode <span class="keyword">string</span> us
+d-i keyboard-configuration/variantcode <span class="keyword">string</span> none
+d-i console-keymaps-at/keymaps select us
+
+<span class="preprocessor"># Network</span>
+d-i netcfg/enable boolean <span class="literal">true</span>
+d-i netcfg/choose_interface select auto
+d-i netcfg/disable_dhcp boolean <span class="literal">false</span>
+d-i netcfg/dhcp_timeout <span class="keyword">string</span> <span class="number">5</span>
+d-i netcfg/disable_autoconfig boolean <span class="literal">false</span>
+d-i netcfg/dhcp_failed note
+<span class="preprocessor"># d-i netcfg/dhcp_options select Configure network manually</span>
+<span class="preprocessor"># d-i netcfg/dhcp_hostname string none</span>
+<span class="preprocessor"># d-i netcfg/get_nameservers string 8.8.8.8</span>
+<span class="preprocessor"># d-i netcfg/get_ipaddress string 192.168.1.10</span>
+<span class="preprocessor"># d-i netcfg/get_netmask string 255.255.255.0</span>
+<span class="preprocessor"># d-i netcfg/get_gateway string 192.168.1.1</span>
+<span class="preprocessor"># d-i netcfg/confirm_static boolean true</span>
+d-i netcfg/get_hostname <span class="keyword">string</span> openstack
+d-i netcfg/get_domain <span class="keyword">string</span> none
+d-i hw-detect/load_firmware boolean <span class="literal">true</span>
+
+<span class="preprocessor"># Mirror</span>
+d-i mirror/country <span class="keyword">string</span> enter information manually
+d-i mirror/http/countries select enter information manually
+d-i mirror/http/directory <span class="keyword">string</span> /ubuntu
+d-i mirror/http/hostname <span class="keyword">string</span> cn.archive.ubuntu.com
+d-i mirror/http/mirror  select cn.archive.ubuntu.com
+d-i mirror/http/proxy <span class="keyword">string</span>
+d-i mirror/suite <span class="keyword">string</span> precise
+d-i mirror/protocol select  http
+
+<span class="preprocessor"># Ntp</span>
+d-i clock-setup/utc boolean <span class="literal">false</span>
+d-i time/zone <span class="keyword">string</span> Asia/Shanghai
+d-i clock-setup/ntp boolean <span class="literal">false</span>
+d-i clock-setup/ntp-server <span class="keyword">string</span>
+
+<span class="preprocessor"># Partition</span>
+d-i partman-auto/init_automatically_partition select biggest_free
+d-i partman-auto/disk <span class="keyword">string</span> /dev/sda
+d-i partman-auto/method <span class="keyword">string</span> regular
+d-i partman-lvm/device_remove_lvm boolean <span class="literal">true</span>
+d-i partman-md/device_remove_md boolean <span class="literal">true</span>
+d-i partman/default_filesystem <span class="keyword">string</span> ext4
+<span class="preprocessor"># d-i partman-lvm/confirm boolean true</span>
+<span class="preprocessor"># d-i partman-auto-lvm/guided_size string max/10GB/50%</span>
+<span class="preprocessor"># d-i partman-auto/choose_recipe select atomic/home/multi</span>
+<span class="preprocessor"># d-i partman-auto/expert_recipe_file string /dev/sdb</span>
+
+d-i partman-auto/choose_recipe select atomic
+d-i partman-auto/expert_recipe <span class="keyword">string</span>    \
+        -<span class="number">1</span> -<span class="number">1</span> -<span class="number">1</span> ext4                     \
+              $primary{}                  \
+              $bootable{}                 \
+              method{ format }            \
+              format{}                    \
+              use_filesystem{}            \
+              filesystem{ ext4 }          \
+              mountpoint{ / }             \
+        .                                 \
+        <span class="number">200</span>% <span class="number">200</span>% <span class="number">200</span>% linux-swap         \
+              method{ swap }              \
+              format{}
+
+d-i partman-md/confirm boolean <span class="literal">true</span>
+d-i partman-partitioning/confirm_write_new_label boolean <span class="literal">true</span>
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean <span class="literal">true</span>
+d-i partman/confirm_nooverwrite boolean <span class="literal">true</span>
+d-i partman/mount_style select uuid
+
+<span class="preprocessor"># Base System</span>
+d-i base-installer/install-recommends boolean <span class="literal">false</span>
+d-i base-installer/kernel/linux/initramfs-generators <span class="keyword">string</span> initramfs-tools
+d-i base-installer/kernel/image <span class="keyword">string</span> linux-server
+base-config mirror/country <span class="keyword">string</span> enter information manually
+base-config mirror/http/countries select enter information manually
+base-config mirror/http/directory <span class="keyword">string</span> /ubuntu
+base-config mirror/http/hostname <span class="keyword">string</span> cn.archive.ubuntu.com
+base-config mirror/http/mirror select cn.archive.ubuntu.com
+base-config mirror/http/proxy <span class="keyword">string</span>
+base-config mirror/protocol select http
+base-config apt-setup/country select enter information manually
+base-config apt-setup/uri_type select http
+base-config apt-setup/hostname <span class="keyword">string</span> cn.archive.ubuntu.com
+base-config apt-setup/directory <span class="keyword">string</span> /ubuntu
+base-config apt-setup/another boolean <span class="literal">false</span>
+base-config apt-setup/non-free boolean <span class="literal">true</span>
+base-config apt-setup/security-updates boolean <span class="literal">true</span>
+
+<span class="preprocessor"># User</span>
+d-i passwd/root-login boolean <span class="literal">true</span>
+<span class="preprocessor"># d-i passwd/root-password password 123456</span>
+<span class="preprocessor"># d-i passwd/root-password-again password 123456</span>
+<span class="preprocessor"># or encrypt</span>
+d-i passwd/root-password-crypted password $<span class="number">1</span>$<span class="number">3</span>nGno0$c4rp7NcQRAcJV3AdzKV890
+d-i passwd/make-user boolean <span class="literal">true</span>
+d-i passwd/user-fullname <span class="keyword">string</span> openstack
+d-i passwd/username <span class="keyword">string</span> openstack
+<span class="preprocessor"># d-i passwd/user-password password openstack</span>
+<span class="preprocessor"># d-i passwd/user-password-again password openstack</span>
+<span class="preprocessor"># or encrypt</span>
+d-i passwd/user-password-crypted password $<span class="number">1</span>$G8Hno0$<span class="number">9</span>Nbux3iss0n3bOLgp8aiU/
+<span class="preprocessor"># d-i passwd/user-uid string 3000</span>
+<span class="preprocessor"># d-i passwd/user-default-groups string audio</span>
+d-i user-setup/allow-password-<span class="keyword">weak</span> boolean <span class="literal">true</span>
+d-i user-setup/encrypt-home boolean <span class="literal">false</span>
+
+<span class="preprocessor"># Apt</span>
+<span class="preprocessor"># d-i apt-setup/non-free boolean true</span>
+<span class="preprocessor"># d-i apt-setup/contrib boolean true</span>
+<span class="preprocessor"># d-i apt-setup/restricted boolean true</span>
+<span class="preprocessor"># d-i apt-setup/universe boolean true</span>
+<span class="preprocessor"># d-i apt-setup/backports boolean true</span>
+<span class="preprocessor"># d-i apt-setup/use_mirror boolean false</span>
+<span class="preprocessor"># d-i apt-setup/services-select multiselect securtiy</span>
+<span class="preprocessor"># d-i apt-setup/security_host string security.ubuntu.com</span>
+<span class="preprocessor"># d-i apt-setup/security_path string /ubuntu</span>
+<span class="preprocessor"># d-i apt-setup/local0/repository string http://xxx stable main</span>
+<span class="preprocessor"># d-i apt-setup/local0/comment string local server</span>
+<span class="preprocessor"># d-i apt-setup/local0/source boolean false</span>
+<span class="preprocessor"># d-i apt-setup/local0/key string http://xxx/key</span>
+<span class="preprocessor"># d-i debian-installer/allow_unauthenticated boolean true</span>
+
+<span class="preprocessor"># Package</span>
+tasksel tasksel/first multiselect none
+d-i pkgsel/include <span class="keyword">string</span> openssh-server build-essential
+d-i pkgsel/upgrade select full-upgrade
+d-i pkgsel/install-language-support boolean <span class="literal">true</span>
+d-i pkgsel/language-packs multiselect en, zh
+d-i pkgsel/update-policy select none
+<span class="preprocessor"># popularity-contest popularity-contest/participate boolean false</span>
+d-i pkgsel/updatedb boolean <span class="literal">true</span>
+
+<span class="preprocessor"># Grub</span>
+d-i grub-installer/skip boolean <span class="literal">false</span>
+d-i lilo-installer/skip boolean <span class="literal">true</span>
+d-i grub-installer/grub2_instead_of_grup_legacy boolean <span class="literal">true</span>
+d-i grub-installer/only_debian boolean <span class="literal">true</span>
+d-i grub-installer/with_other_os boolean <span class="literal">true</span>
+<span class="preprocessor"># d-i grub-installer/bootdev string (hd0,0) (hd1,0)</span>
+<span class="preprocessor"># d-i grub-installer/password password 123456</span>
+<span class="preprocessor"># d-i grub-installer/password-again password 123456</span>
+<span class="preprocessor"># or encrypt</span>
+<span class="preprocessor"># d-i grub-installer/password-crypted password $1$2.Qno0$6cITxF0YWtc/z5fQ05dPn.</span>
+<span class="preprocessor"># d-i debian-installer/add-kernel-opts string nousb</span>
+
+<span class="preprocessor"># Finish</span>
+d-i finish-install/keep-consoles boolean <span class="literal">true</span>
+d-i finish-install/reboot_in_progress note
+d-i cdrom-detect/eject boolean <span class="literal">true</span>
+d-i debian-installer/exit/halt boolean <span class="literal">false</span>
+d-i debian-installer/exit/poweroff boolean <span class="literal">false</span>
+</pre></td></tr></table></figure>
+
+<p>本来今天不想发这篇文章，想下次再发，折腾了一个7小时+，还是发布。<br>心一执着，则万事不得自然。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+  
+    <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
         <time datetime="2013-12-07T12:29:47.000Z"><a href="/2013/12/07/parallel-shell-command/">Dec 7 2013</a></time>
       
       
@@ -304,6 +727,10 @@ sys    0m0.940s
 <div class="widget tag">
   <h3 class="title">Tags</h3>
   <ul class="entry">
+  
+    <li><a href="/tags/Cobbler/">Cobbler</a><small>1</small></li>
+  
+    <li><a href="/tags/Kickstart/">Kickstart</a><small>1</small></li>
   
     <li><a href="/tags/parallel/">parallel</a><small>1</small></li>
   

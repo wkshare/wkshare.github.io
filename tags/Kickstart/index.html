@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>IceFire Blog</title>
+  <title>Kickstart | IceFire Blog</title>
   <meta name="author" content="Alex Wong">
   
   <meta name="description" content="Music Camera Movie">
@@ -44,7 +44,11 @@
 <div class="clearfix"></div></header>
   <div id="content" class="inner">
     <div id="main-col" class="alignleft"><div id="wrapper">
-  <article class="post">
+<h2 class="archive-title tag">Kickstart</h2>
+
+
+  
+    <article class="post">
   
   <div class="post-content">
     <header>
@@ -466,248 +470,14 @@ d-i debian-installer/exit/poweroff boolean <span class="literal">false</span>
 </article>
 
 
-
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2013-12-07T12:29:47.000Z"><a href="/2013/12/07/parallel-shell-command/">Dec 7 2013</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2013/12/07/parallel-shell-command/">parallel shell command</a></h1>
   
 
-    </header>
-    <div class="entry">
-      
-        <p>在网上看到一篇讲述充分利用CPU的多核优势，来让SHELL中的命令执行速度加快。<br>网上的那篇文章：<a href="http://www.rankfocus.com/use-cpu-cores-linux-commands/" target="_blank">http://www.rankfocus.com/use-cpu-cores-linux-commands/</a><br>今天，对所有技巧做一次验证。<br>力学笃行!</p>
-<p>测试环境:<br>OS: Ubuntu 12.04<br>CPU: 8 cores<br>Memory: 94 GB</p>
-<p>开始前，请安装<code>http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2</code></p>
-<h2>Bzip2</h2>
-<p>未并行:</p>
-<pre>
-time(cat zabbix_agentd.log.old | bzip2 --best > compressedfile.bz2)
-
-real    5m12.338s
-user    5m10.975s
-sys    0m2.344s
-</pre>
-
-<p>启用并行:</p>
-<pre>
-time(cat zabbix_agentd.log.old | parallel --pipe --recend '' --k bzip2 --best > compressedfile_p.bz2)
-
-real    0m46.569s
-user    5m4.683s    #用户态所用时间差不多，但是real执行时间大大降低
-sys    0m14.885s
-</pre>
-
-<h2>GREP</h2>
-<p>未并行:</p>
-<pre>
-time(grep error zabbix_agentd.log.old)
-5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4015ms
-5 packets transmitted, 2 received, +3 errors, 60% packet loss, time 4007ms
-5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4016ms
-
-real    0m1.971s
-user    0m1.684s
-sys    0m0.280s
-</pre>
-
-<p>启用并行: </p>
-<pre>
-time(cat zabbix_agentd.log.old | parallel --pipe grep 'error')
-5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4015ms
-5 packets transmitted, 2 received, +3 errors, 60% packet loss, time 4007ms
-5 packets transmitted, 0 received, +3 errors, 100% packet loss, time 4016ms
-
-real    0m10.508s  #为什么会慢呢？cat 并没有并行，而grep速度本身就很快。不适合使用并行。
-user    0m7.596s   #如果更换成复杂的业务可能会快一些。有计划再实验。
-sys    0m15.057s
-</pre>
-
-<h2>AWK</h2>
-<p>未并行:</p>
-<pre>
-time(cat rands25M.log | awk '{s+=$1}END{print s}')
-73487658033
-
-real    0m1.939s
-user    0m1.908s
-sys    0m0.068s
-</pre>
-
-<p>启用并行:</p>
-<pre>
-time(cat rands25M.log | parallel --pipe awk \'{s+=\$1}END{print s}\' | awk '{s+=$1}END{print s}')
-73487658033
-
-real    0m0.780s
-user    0m2.760s
-sys    0m0.376s
-效果还是比较明显：）
-</pre>
-
-<h2>WC</h2>
-<p>最后的‘Water Closet’测试<br>未并行:</p>
-<pre>
-time(wc -l zabbix_agentd.log.old)
-21110223 zabbix_agentd.log.old
-
-real    0m0.884s
-user    0m0.544s
-sys    0m0.336s
-</pre>
-
-<p>启用并行:</p>
-<pre>
-time(cat zabbix_agentd.log.old | parallel --pipe wc -l | awk '{s+=$1}END{print s}')
-21110223
-
-real    0m10.484s   #时间又较长？上个示例中，awk做了相对较为复杂的计算。而本案例，只是统计行数。
-user    0m4.820s    #So... ...什么情况下，使用并行。什么情况下，乖乖使用传统做法。
-sys    0m13.525s
-</pre>
-
-<h2>小结</h2>
-<p>附带另一个实验，作为小结:</p>
-<pre>
-time(cat rands25M.log | awk '{s+=$1}END{print s}')
-73487658033
-
-real    0m1.948s
-user    0m1.920s
-sys    0m0.068s
-
-time(cat rands25M.log | xargs -P 8 | awk '{s+=$1}END{print s}')
-3317178
-
-real    0m1.139s
-user    0m1.084s
-sys    0m0.940s
-</pre>
-
-<p>xargs 也可以并行，但是为什么效果没有parallel牛逼呢？</p>
-
-      
-    </div>
-    <footer>
-      
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2013-12-07T10:58:09.000Z"><a href="/2013/12/07/test3/">Dec 7 2013</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2013/12/07/test3/">test3</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        
-      
-    </div>
-    <footer>
-      
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2013-12-07T10:56:06.000Z"><a href="/2013/12/07/test2/">Dec 7 2013</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2013/12/07/test2/">test2</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>test2 heha</p>
-
-      
-    </div>
-    <footer>
-      
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-  <article class="post">
-  
-  <div class="post-content">
-    <header>
-      
-        <div class="icon"></div>
-        <time datetime="2013-12-07T10:54:42.000Z"><a href="/2013/12/07/hello-world/">Dec 7 2013</a></time>
-      
-      
-  
-    <h1 class="title"><a href="/2013/12/07/hello-world/">Hello World</a></h1>
-  
-
-    </header>
-    <div class="entry">
-      
-        <p>Welcome to <a href="http://zespia.tw/hexo" target="_blank">Hexo</a>! This is your very first post. Check <a href="http://zespia.tw/hexo/docs" target="_blank">documentation</a> to learn how to use.</p>
-
-      
-    </div>
-    <footer>
-      
-        
-        
-      
-      <div class="clearfix"></div>
-    </footer>
-  </div>
-</article>
-
-
-
-
-<nav id="pagination">
+  <nav id="pagination">
   
   
   <div class="clearfix"></div>
-</nav></div></div>
+</nav>
+</div></div>
     <aside id="sidebar" class="alignright">
   <div class="search">
   <form action="//google.com/search" method="get" accept-charset="utf-8">
