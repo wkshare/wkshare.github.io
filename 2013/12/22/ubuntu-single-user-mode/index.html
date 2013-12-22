@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>test3 | IceFire Blog</title>
+  <title>Ubuntu Single User Mode | IceFire Blog</title>
   <meta name="author" content="Alex Wong">
   
   <meta name="description" content="Music Camera Movie">
@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  <meta property="og:title" content="test3"/>
+  <meta property="og:title" content="Ubuntu Single User Mode"/>
   <meta property="og:site_name" content="IceFire Blog"/>
 
   
@@ -49,23 +49,36 @@
     <header>
       
         <div class="icon"></div>
-        <time datetime="2013-12-07T10:58:09.000Z"><a href="/2013/12/07/test3/">Dec 7 2013</a></time>
+        <time datetime="2013-12-22T06:32:13.000Z"><a href="/2013/12/22/ubuntu-single-user-mode/">Dec 22 2013</a></time>
       
       
   
-    <h1 class="title">test3</h1>
+    <h1 class="title">Ubuntu Single User Mode</h1>
   
 
     </header>
     <div class="entry">
       
-        
+        <p>有段时间没有发文了，发一炮。<br>怎么进入单用户模式呢？</p>
+<ul>
+<li>1、开机，按Shift进入grub启动菜单。</li>
+<li>2、选择Recovery Mode，按e，进入选单编辑。</li>
+<li>3、将&#39;ro.*$‘替换为’rw single init=/bin/bash&#39;，按ctrl+x进入启动。</li>
+<li>4、启动后，即进入单用户模式。</li>
+</ul>
+<p>这个东西，每次用都要搜索，这次保存下来。</p>
+
       
     </div>
     <footer>
       
         
         
+  
+  <div class="tags">
+    <a href="/tags/Ubuntu/">Ubuntu</a>
+  </div>
+
         
   <div class="addthis addthis_toolbox addthis_default_style">
     
@@ -106,7 +119,7 @@
   }(document, 'script', 'facebook-jssdk'));
 </script>
 
-<div class="fb-comments" data-href="http://wkshare.github.io/2013/12/07/test3/" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
+<div class="fb-comments" data-href="http://wkshare.github.io/2013/12/22/ubuntu-single-user-mode/" data-num-posts="5" data-width="840" data-colorscheme="light"></div>
       
   
 </section>
