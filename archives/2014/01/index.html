@@ -1,0 +1,181 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Archives: 2014/1 | IceFire Blog</title>
+  <meta name="author" content="Alex Wong">
+  
+  <meta name="description" content="Music Camera Movie">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+  <meta property="og:site_name" content="IceFire Blog"/>
+
+  
+    <meta property="og:image" content="undefined"/>
+  
+
+  <link href="/favicon.png" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="IceFire Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+
+<body>
+  <header id="header" class="inner"><div class="alignleft">
+  <h1><a href="/">IceFire Blog</a></h1>
+  <h2><a href="/">love share</a></h2>
+</div>
+<nav id="main-nav" class="alignright">
+  <ul>
+    
+      <li><a href="/">Home</a></li>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+<div class="clearfix"></div></header>
+  <div id="content" class="inner">
+    <div id="main-col" class="alignleft"><div id="wrapper">
+<h2 class="archive-title">2014/1</h2>
+
+
+  
+    <article class="post">
+  
+  <div class="post-content">
+    <header>
+      
+        <div class="icon"></div>
+        <time datetime="2014-01-05T19:09:00.000Z"><a href="/2014/01/06/zabbix-trigger-expression-example/">Jan 6 2014</a></time>
+      
+      
+  
+    <h1 class="title"><a href="/2014/01/06/zabbix-trigger-expression-example/">Zabbix Trigger Expression Example</a></h1>
+  
+
+    </header>
+    <div class="entry">
+      
+        <h2>触发器例子</h2>
+<h3>例子一</h3>
+<p>www.qiniu.com上的处理器负载太高<br>{www.zabbix.com:system.cpu.load[all,avg1].last(0)}&gt;5</p>
+<p>&#39;{www.zabbix.com:system.cpu.load[all,avg1]‘给出了监控参数的名称。它指定服务器是’www.qiniu.com‘，被监控关键字是’system.cpu.load[all,avg1]‘，通过使用函数’last()‘，我们指定最近的值。最后，’&gt;5&#39;表示来自www.qiniu.com的最后负载测量大于5则触发器进入PROBLEM状态。</p>
+<h3>例子二</h3>
+<p>www.qiniu.com过载了</p>
+<p>{www.zabbix.com:system.cpu.load[all,avg1].last(0)}&gt;5|{www.zabbix.com:system.cpu.load[all,avg1].min(10m)}&gt;2 </p>
+<p>无论当前处理器负载大于5还是最近10分钟的负载大于2，该表达式的值都是真</p>
+<h3>例子三</h3>
+<p>文件/etc/passwd被更改了。</p>
+<p>使用函数diff：<br>{www.zabbix.com:vfs.file.cksum[/etc/passwd].diff(0)}&gt;0<br>当文件/etc/passwd之前的checksum值于最近的值不同，则该表达式为真</p>
+<p>相似的表达式也可以用在监控重要的文件（如/etc/passwd, /etc/inetd.conf, /kernel等）变更上</p>
+<h3>例子四</h3>
+<p>有人从因特网上下载大文件</p>
+<p>使用函数min：<br>{www.qiniu.com:net.if.in[eth0,bytes].min(5m)}&gt;100K<br>当最近5分钟内，eth0接收的字节数大于100KB，则该表达式为真。</p>
+<h3>例子五</h3>
+<p>两个SMTP服务器的集群节点都停止了</p>
+<p>注意在一个表达式中使用两个不同的主机<br>{smtp1.qiniu.com:net.tcp.service[smtp].last(0)}=0&amp;{smtp2.qiniu.com:net.tcp.service[smtp].last(0)}=0<br>当SMTP服务器smtp1.qiniu.com与smtp2.qiniu.com都停止时，表达式为真</p>
+<h3>例子六</h3>
+<p>zabbix客户端代理需要更新</p>
+<p>使用函数str():<br>{zabbix.qiniu.com:agent.version.str(“beta8”)}=1</p>
+<p>当zabbix客户端代理有版本beta8时该表达式为真。</p>
+<h3>例子七</h3>
+<p>服务器不可达<br>{zabbix.qiniu.com:icmpping.count(30m,0)}&gt;5<br>主机zabbix.qiniu.com在最近30分钟内超过5次不可达该表达式为真</p>
+<h3>例子八</h3>
+<p>最近三分钟内没有回应</p>
+<p>使用函数nodata（）：<br>{zabbix.qiniu.com:tick.nodata(3m)}=1<br>‘tick’必须使用类型‘Zabbix trapper’。为了这个触发器工作，tick必须定义。该主机应该使用zabbix_sender定期为该参数发送数据。如果180秒都没有收到数据，该触发器的值变为PROBLEM。</p>
+<h3>例子九</h3>
+<p>CPU在夜间活度</p>
+<p>使用函数time（）<br>{zabbix:system.cpu.load[all,avg1].min(5m)}&gt;2&amp;{zabbix:system.cpu.load[all,avg1].time(0)}&gt;000000&amp;{zabbix:system.cpu.load[all,avg1].time(0)}&lt;060000<br>触发器只在晚上(00:00-06:00)为可用。</p>
+<h3>例子十</h3>
+<p>检查客户端本地时间是否与zabbix服务器时间同步</p>
+<p>使用函数fuzzytime():<br>{MySQL_DB:system.localtime.fuzzytime(10)}=0<br>当MySQL_DB的本地时间与zabbix server的时间相差超过10秒，触发器变为PROBLEM状态。</p>
+<h3>例子十一</h3>
+<p>有时候触发器必须在不同情况下有不同条件。例如：我们想定义当服务器房间的温度超过20摄氏度时触发器变为PROBLEM状态，然后触发器一直停留在这个状态除非温度低于15摄氏度。</p>
+<p>为了实现这种功能，我们定义下面的触发器。</p>
+<p>服务器房间温度过高<br>({TRIGGER.VALUE}=0&amp;{server:temp.last(0)}&gt;20)|<br>({TRIGGER.VALUE}=1&amp;{server:temp.last(0)}&gt;15)<br>注意使用了一个宏{TRIGGER.VALUE}，这个宏返回当前触发器的值。</p>
+
+      
+    </div>
+    <footer>
+      
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+  
+
+  <nav id="pagination">
+  
+  
+  <div class="clearfix"></div>
+</nav>
+</div></div>
+    <aside id="sidebar" class="alignright">
+  <div class="search">
+  <form action="//google.com/search" method="get" accept-charset="utf-8">
+    <input type="search" name="q" results="0" placeholder="Search">
+    <input type="hidden" name="q" value="site:wkshare.github.io">
+  </form>
+</div>
+
+  
+
+  
+<div class="widget tag">
+  <h3 class="title">Tags</h3>
+  <ul class="entry">
+  
+    <li><a href="/tags/Cobbler/">Cobbler</a><small>1</small></li>
+  
+    <li><a href="/tags/Kickstart/">Kickstart</a><small>1</small></li>
+  
+    <li><a href="/tags/Ubuntu/">Ubuntu</a><small>1</small></li>
+  
+    <li><a href="/tags/parallel/">parallel</a><small>1</small></li>
+  
+    <li><a href="/tags/shell/">shell</a><small>1</small></li>
+  
+    <li><a href="/tags/zabbix/">zabbix</a><small>1</small></li>
+  
+  </ul>
+</div>
+
+</aside>
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div class="alignleft">
+  
+  &copy; 2014 Alex Wong
+  
+</div>
+<div class="clearfix"></div></footer>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+</body>
+</html>
